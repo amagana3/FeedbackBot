@@ -59,6 +59,8 @@ async def on_message(message):
 
             # if they have submitted at least 2 messages, they're fine.
             if counter > 2:
+                # TODO: We need to make sure that the messages don't contain links,
+                #  or they could be spamming feedback submissions.
                 return
             else:
                 # Give user a warning.
