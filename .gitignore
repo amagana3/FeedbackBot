@@ -1,0 +1,8 @@
+# hide config file.
+.env
+
+# hide virtual env
+env/
+
+# jetbrains
+.idea/
