@@ -15,76 +15,113 @@ client = discord.Client()
 @client.event
 async def on_ready():
     guild = discord.utils.get(client.guilds, name=GUILD)
-    print(
-        f'{client.user} is connected to the following GUILD:\n'
-        f'{guild.name} (id: {guild.id})'
-    )
+    print(f'{client.user} is connected to the following GUILD: {guild.name} (ID: {guild.id}')
+    print()
 
 
 @client.event
 async def on_message(message):
+    # The bot called, ignore.
     if message.author == client.user:
         return
-
-    # pseudocode:
-    # Problem: When someone adds a new link (soundcloud) or mp3 - we should check if that person has given feedback.
-    # Solution:
-    # To determine if there is feedback, look for previous messages within the channel.
-    # In the beginning, we can assume any previous message is feedback,
-    # otherwise we could look for keywords most feedback.
-    # Or there could be a rule that if you leave feedback,
-    # you should label it as "FEEDBACK" to a track for better visibility by the bot.
-
-    print()
 
     print("Content:", message.content)
     print("Channel:", message.channel)
     print("Attachments: ", message.attachments)
+    print()
 
-    print("----")
+    # NEW pseudocode:
+    # Problem: When someone wants feedback we should make sure they have given feedback to the previous feedback track.
+    # Solution:
+    # When someone submits a new feedback (Soundcloud link or MP3), check to see the previous user's feedback
+    # See if current user (submitter) has given feedback to previous person
+    # if they have, then we're good!
+    # if they haven't, then we decline the feedback and tell them to give feedback to previous user.
+    # Send them the message in context to give feedback.
 
     # Should be in feedback channel
     if message.channel.name == 'feedback':
-        # For SoundCloud submissions.
+        # Someone submitted feedback, check to see if they gave feedback to previous poster.
         if 'soundcloud.com' in message.content:
-            # See who posted their track.
-            author_id = message.author.id
-            counter = 0
+            if not await validate_feedback(message):
+                await message.delete()
+                await deny_feedback(message)
 
-            # Loop through last 100  messages
-            async for m in message.channel.history(limit=200):
-                # Check if user has given feedback before
-                if m.author.id == author_id:
-                    counter += 1
+        # Someone wants to know what the last feedback is.
+        if '.last' in message.content:
+            last_feedback_info = await last_feedback(message)
+            embed_var = discord.Embed(title="Last Feedback Request", description="By: " + last_feedback_info[0],
+                                      color=0x00ff00)
+            embed_var.add_field(name="Original Message", value=last_feedback_info[1], inline=False)
+            embed_var.add_field(name="Link to Message", value=last_feedback_info[2], inline=False)
+            await message.channel.send(embed=embed_var)
 
-            # if they have submitted at least 2 messages, they're fine.
-            if counter > 2:
-                # TODO: We need to make sure that the messages don't contain links,
-                #  or they could be spamming feedback submissions.
-                return
-            else:
-                # Give user a warning.
-                await message.channel.send(
-                    "Excuse me! You must submit feedback to a track above you to receive feedback!")
-        # For .mp3 or .wav submissions
-        if any('.mp3' or '.wav' or '.mp4' in s for s in message.attachments):
-            # See who posted their track.
-            author_id = message.author.id
-            counter = 0
 
-            # Loop through last 100  messages
-            async for m in message.channel.history(limit=200):
-                # Check if user has given feedback before
-                if m.author.id == author_id:
-                    counter += 1
+async def last_feedback(message) -> tuple:
+    count = 0
+    messages = await message.channel.history(limit=100).flatten()
+    for m in messages:
+        if message.author.id == m.author.id:
+            continue
+        if "soundcloud.com" in m.content and count < 1:
+            # Look for previous feedback
+            count += 1
+            return m.author.name, m.content, m.jump_url, m.author.id
 
-            # if they have submitted at least 2 messages, they're fine.
-            if counter > 2:
-                return
-            else:
-                # Give user a warning.
-                await message.channel.send(
-                    "Excuse me! You must submit feedback to a track above you to receive feedback!")
+
+# This method checks if the user who submitted feedback has given feedback to previous poster
+# Returns a boolean.
+async def validate_feedback(message):
+    # pseudocode
+    # Get the last feedback
+    # Check to see if the person requesting has given feedback to last one
+    # Check if person sending has @(user) the person w/ 100 characters or more.
+    # If they have - allow the feedback submission. (true)
+    # If they have not - deny their feedback. (false)
+
+    # Okay let's get the username of requester and the last feedback submitter.
+    curr_feedback_user = message.author.name
+    curr_feedback_user_id = message.author.id
+
+    print("New person submitted feedback: " + curr_feedback_user)
+    print()
+
+    resp = await last_feedback(message)
+
+    prev_feedback_user = resp[0]
+    prev_feedback_user_id = resp[3]
+
+    print("Previous feedback was: " + prev_feedback_user)
+    print()
+
+    # Check history, has the requester replied to the submitter?
+    messages = await message.channel.history(limit=100).flatten()
+    if len(messages) <= 1:
+        # Exit early if there is nothing.
+        return True
+
+    for x in messages:
+        for y in x.mentions:
+            if y.id == prev_feedback_user_id:
+                # Got the previous mention, but was it by the submitter?
+                print("The previous feedback submitter is:", y.name)
+                if x.author.id == curr_feedback_user_id:
+                    print("The person who currently gave feedback is:", curr_feedback_user)
+                    return True
+    return False
+
+
+async def deny_feedback(message):
+    print("Feedback denied for:", message.author.name)
+
+    last_feedback_info = await last_feedback(message)
+    embed_var = discord.Embed(title="Last Feedback Request", description="By: " + last_feedback_info[0],
+                              color=0xFF0000)
+    embed_var.add_field(name="Original Message", value=last_feedback_info[1], inline=False)
+    embed_var.add_field(name="Link to Message", value=last_feedback_info[2], inline=False)
+    await message.channel.send(
+        message.author.mention + ", :x:** Feedback Denied! **:x: \n Please give feedback to the following: ",
+        embed=embed_var)
 
 
 client.run(TOKEN)
