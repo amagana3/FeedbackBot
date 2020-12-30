@@ -33,7 +33,7 @@ async def on_message(message):
     # NEW pseudocode:
     # Problem: When someone wants feedback we should make sure they have given feedback to the previous feedback track.
     # Solution:
-    # When someone submits a new feedback (Soundcloud link or MP3), check to see the previous user's feedback
+    # When someone submits a new feedback (Soundcloud link), check to see the previous user's feedback
     # See if current user (submitter) has given feedback to previous person
     # if they have, then we're good!
     # if they haven't, then we decline the feedback and tell them to give feedback to previous user.
@@ -61,12 +61,22 @@ async def last_feedback(message) -> tuple:
     count = 0
     messages = await message.channel.history(limit=100).flatten()
     for m in messages:
+        if "soundcloud.com" in m.content and count < 1:
+            # Look for previous feedback
+            count += 1
+            return m.author.name, m.content, m.jump_url, m.author.id
+
+
+async def previous_feedback(message) -> tuple:
+    count = 0
+    messages = await message.channel.history(limit=100).flatten()
+    for m in messages:
         if message.author.id == m.author.id:
             continue
         if "soundcloud.com" in m.content and count < 1:
             # Look for previous feedback
             count += 1
-            return m.author.name, m.content, m.jump_url, m.author.id
+            return m.author.name, m.content, m.jump_url, m.author.id, m
 
 
 # This method checks if the user who submitted feedback has given feedback to previous poster
@@ -86,7 +96,7 @@ async def validate_feedback(message):
     print("New person submitted feedback: " + curr_feedback_user)
     print()
 
-    resp = await last_feedback(message)
+    resp = await previous_feedback(message)
 
     prev_feedback_user = resp[0]
     prev_feedback_user_id = resp[3]
@@ -108,13 +118,26 @@ async def validate_feedback(message):
                 if x.author.id == curr_feedback_user_id:
                     print("The person who currently gave feedback is:", curr_feedback_user)
                     return True
+
+    # for y in previous_message.mentions:
+    #     print("---")
+    #     print("Person mentioned: ", y)
+    # if y.mentioned_in(x):
+    #     if x.author.name == "FeedbackBot":
+    #         # The bot did mentions, ignore his.
+    #         continue
+    #
+    #     print("Original Author: ", x.author.name)
+    #     print("Mentioned Author: ", y.name)
+    #     print("Message: ", x.content)
+    #     return True
     return False
 
 
 async def deny_feedback(message):
     print("Feedback denied for:", message.author.name)
 
-    last_feedback_info = await last_feedback(message)
+    last_feedback_info = await previous_feedback(message)
     embed_var = discord.Embed(title="Last Feedback Request", description="By: " + last_feedback_info[0],
                               color=0xFF0000)
     embed_var.add_field(name="Original Message", value=last_feedback_info[1], inline=False)
