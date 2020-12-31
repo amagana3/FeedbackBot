@@ -4,7 +4,16 @@ import os
 
 import discord
 from dotenv import load_dotenv
-from typing import Optional, Any
+
+# pseudocode:
+# Problem: When someone wants feedback we should make sure they have given feedback to the previous feedback track.
+# Solution:
+#   When someone submits a new feedback (Soundcloud link), check to see the previous user's feedback
+#   See if current user (submitter) has given feedback to previous person
+#   if they have, then we're good!
+#   if they haven't, then we decline the feedback and tell them to give feedback to previous user.
+#       Send them the message in context to give feedback.
+
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -31,15 +40,6 @@ async def on_message(message):
     print("Attachments: ", message.attachments)
     print()
 
-    # NEW pseudocode:
-    # Problem: When someone wants feedback we should make sure they have given feedback to the previous feedback track.
-    # Solution:
-    # When someone submits a new feedback (Soundcloud link), check to see the previous user's feedback
-    # See if current user (submitter) has given feedback to previous person
-    # if they have, then we're good!
-    # if they haven't, then we decline the feedback and tell them to give feedback to previous user.
-    # Send them the message in context to give feedback.
-
     # Should be in feedback channel
     if message.channel.name == 'feedback':
         # Someone submitted feedback, check to see if they gave feedback to previous poster.
@@ -65,6 +65,7 @@ async def on_message(message):
             await message.channel.send(embed=embed_var)
 
 
+# This exists to give the last feedback overall (even if you're the final submission)
 async def last_feedback(message) -> tuple:
     count = 0
     messages = await message.channel.history(limit=100).flatten()
@@ -75,6 +76,7 @@ async def last_feedback(message) -> tuple:
             return m.author.name, m.content, m.jump_url, m.author.id
 
 
+# This is to get the previous feedback that DOES NOT INCLUDE the denied one (since we gotta submit to trigger this)
 async def previous_feedback(message) -> tuple:
     count = 0
     messages = await message.channel.history(limit=100).flatten()
