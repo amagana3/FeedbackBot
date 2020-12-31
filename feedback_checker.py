@@ -1,5 +1,5 @@
 # Author: Andrew Magana
-# timezone_bot.py
+# feedback_checker.py
 import os
 
 import discord
