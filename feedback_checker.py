@@ -4,6 +4,7 @@ import os
 
 import discord
 from dotenv import load_dotenv
+from typing import Optional, Any
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -67,7 +68,7 @@ async def last_feedback(message) -> tuple:
             return m.author.name, m.content, m.jump_url, m.author.id
 
 
-async def previous_feedback(message) -> tuple:
+async def previous_feedback(message) -> Optional[tuple[Any, Any, Any, Any, Any]]:
     count = 0
     messages = await message.channel.history(limit=100).flatten()
     for m in messages:
@@ -83,11 +84,11 @@ async def previous_feedback(message) -> tuple:
 # Returns a boolean.
 async def validate_feedback(message):
     # pseudocode
-    # Get the last feedback
-    # Check to see if the person requesting has given feedback to last one
-    # Check if person sending has @(user) the person w/ 100 characters or more.
-    # If they have - allow the feedback submission. (true)
-    # If they have not - deny their feedback. (false)
+    # Look for the last feedback submission.
+    # Grab all messages from the time the person submitted the newest feedback till the last.
+    # Check if the new submitter has mentioned the previous feedback (within those messages)
+    # If they have, good to go. Gave feedback.
+    # If they have not, then we need to deny their request.
 
     # Okay let's get the username of requester and the last feedback submitter.
     curr_feedback_user = message.author.name
@@ -100,37 +101,37 @@ async def validate_feedback(message):
 
     prev_feedback_user = resp[0]
     prev_feedback_user_id = resp[3]
-
-    print("Previous feedback was: " + prev_feedback_user)
+    previous_feedback_message = resp[4]
+    print("Previous Feedback ID: ", previous_feedback_message.id)
+    print("Previous Feedback author: " + prev_feedback_user)
     print()
 
     # Check history, has the requester replied to the submitter?
     messages = await message.channel.history(limit=100).flatten()
-    if len(messages) <= 1:
-        # Exit early if there is nothing.
-        return True
 
+    count = 0
+    # Grab all messages until the previous feedback
     for x in messages:
-        for y in x.mentions:
-            if y.id == prev_feedback_user_id:
-                # Got the previous mention, but was it by the submitter?
-                print("The previous feedback submitter is:", y.name)
-                if x.author.id == curr_feedback_user_id:
-                    print("The person who currently gave feedback is:", curr_feedback_user)
-                    return True
-
-    # for y in previous_message.mentions:
-    #     print("---")
-    #     print("Person mentioned: ", y)
-    # if y.mentioned_in(x):
-    #     if x.author.name == "FeedbackBot":
-    #         # The bot did mentions, ignore his.
-    #         continue
-    #
-    #     print("Original Author: ", x.author.name)
-    #     print("Mentioned Author: ", y.name)
-    #     print("Message: ", x.content)
-    #     return True
+        count += 1
+        if previous_feedback_message.id == x.id:
+            # Got all messages till previous, check if the messages have mentions from original author
+            messages_till_prev = await message.channel.history(limit=count).flatten()
+            for y in messages_till_prev:
+                # Now we check the messages the submitter has posted (since prev feedback)
+                if y.author.id == curr_feedback_user_id:
+                    # If they have given mentions, have they been to the prev feedback?
+                    for mention in y.mentions:
+                        if mention.id == prev_feedback_user_id:
+                            # We know the new feedback submitter has replied to the previous feedback author.
+                            print("Feedback message:", y.content)
+                            print("Length of feedback:", len(y.content))
+                            if len(y.content) > 100:
+                                return True
+                            else:
+                                await message.channel.send(
+                                    "Please make sure your submission is over 100 characters! That should be about a "
+                                    "couple sentences on average. :)")
+                                return False
     return False
 
 
