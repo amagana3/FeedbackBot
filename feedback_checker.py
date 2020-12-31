@@ -133,7 +133,7 @@ async def validate_feedback(message):
                             # We know the new feedback submitter has replied to the previous feedback author.
                             print("Feedback message:", y.content)
                             print("Length of feedback:", len(y.content))
-                            if len(y.content) > 100:
+                            if len(y.content) >= 100:
                                 return True
                             else:
                                 await message.channel.send(
