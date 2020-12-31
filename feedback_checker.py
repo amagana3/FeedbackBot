@@ -57,6 +57,13 @@ async def on_message(message):
             embed_var.add_field(name="Link to Message", value=last_feedback_info[2], inline=False)
             await message.channel.send(embed=embed_var)
 
+        # Some general info about this bot and the commands available.
+        if '.info' in message.content:
+            embed_var = discord.Embed(title="FeedbackBot", description="Author: KingMagana69", colour=0x0000FF)
+            embed_var.add_field(name="Command `.last`", value="Shows the previous feedback submission", inline=False)
+            embed_var.add_field(name="Command `.info`", value="Shows information about the bot", inline=False)
+            await message.channel.send(embed=embed_var)
+
 
 async def last_feedback(message) -> tuple:
     count = 0
@@ -68,7 +75,7 @@ async def last_feedback(message) -> tuple:
             return m.author.name, m.content, m.jump_url, m.author.id
 
 
-async def previous_feedback(message) -> Optional[tuple[Any, Any, Any, Any, Any]]:
+async def previous_feedback(message) -> tuple:
     count = 0
     messages = await message.channel.history(limit=100).flatten()
     for m in messages:
@@ -80,16 +87,15 @@ async def previous_feedback(message) -> Optional[tuple[Any, Any, Any, Any, Any]]
             return m.author.name, m.content, m.jump_url, m.author.id, m
 
 
+# pseudocode
+# Look for the last feedback submission.
+# Grab all messages from the time the person submitted the newest feedback till the last.
+# Check if the new submitter has mentioned the previous feedback (within those messages)
+# If they have, good to go. Gave feedback.
+# If they have not, then we need to deny their request.
 # This method checks if the user who submitted feedback has given feedback to previous poster
 # Returns a boolean.
 async def validate_feedback(message):
-    # pseudocode
-    # Look for the last feedback submission.
-    # Grab all messages from the time the person submitted the newest feedback till the last.
-    # Check if the new submitter has mentioned the previous feedback (within those messages)
-    # If they have, good to go. Gave feedback.
-    # If they have not, then we need to deny their request.
-
     # Okay let's get the username of requester and the last feedback submitter.
     curr_feedback_user = message.author.name
     curr_feedback_user_id = message.author.id
