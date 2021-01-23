@@ -42,8 +42,20 @@ async def on_message(message):
 
     # Should be in feedback channel
     if message.channel.name == 'feedback':
-        # Someone submitted feedback, check to see if they gave feedback to previous poster.
+        # Regular soundcloud links
         if 'soundcloud.com' in message.content:
+            if not await validate_feedback(message):
+                await message.delete()
+                await deny_feedback(message)
+
+        # Soundcloud dynamic link
+        if 'soundcloud.app.goo.gl' in message.content:
+            if not await validate_feedback(message):
+                await message.delete()
+                await deny_feedback(message)
+
+        # Dropbox link
+        if 'dropbox.com' in message.content:
             if not await validate_feedback(message):
                 await message.delete()
                 await deny_feedback(message)
@@ -60,8 +72,14 @@ async def on_message(message):
         # Some general info about this bot and the commands available.
         if '.info' in message.content:
             embed_var = discord.Embed(title="FeedbackBot", description="Author: KingMagana69", colour=0x0000FF)
-            embed_var.add_field(name="Command `.last`", value="Shows the previous feedback submission", inline=False)
-            embed_var.add_field(name="Command `.info`", value="Shows information about the bot", inline=False)
+            embed_var.add_field(name="How do I work?",
+                                value="The bot checks to see if the last person who submitted feedback gave feedback "
+                                      "to the previous feedback submitter. Confused yet? This can be in the form of a "
+                                      "tag (@), or a direct reply. Soundcloud links and dropbox submissions are "
+                                      "acceptable! Anyone who games the system shall be punished. The punishment? "
+                                      "Must listen to Baby Shark. Lol jk you'll just be kicked.",
+                                inline=False)
+            embed_var.add_field(name="Command Option: `.last`", value="Shows the previous feedback submission", inline=False)
             await message.channel.send(embed=embed_var)
 
 
@@ -75,15 +93,36 @@ async def last_feedback(message) -> tuple:
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
 
+        if "soundcloud.app.goo.g" in m.content and count < 1:
+            # Look for previous feedback
+            count += 1
+            return m.author.name, m.content, m.jump_url, m.author.id
+
+        if "dropbox.com" in m.content and count < 1:
+            # Look for previous feedback
+            count += 1
+            return m.author.name, m.content, m.jump_url, m.author.id
+
 
 # This is to get the previous feedback that DOES NOT INCLUDE the denied one (since we gotta submit to trigger this)
 async def previous_feedback(message) -> tuple:
     count = 0
     messages = await message.channel.history(limit=100).flatten()
     for m in messages:
+        # This stops from showing the person who just submitted.
         if message.author.id == m.author.id:
             continue
         if "soundcloud.com" in m.content and count < 1:
+            # Look for previous feedback
+            count += 1
+            return m.author.name, m.content, m.jump_url, m.author.id, m
+
+        if "soundcloud.app.goo.gl" in m.content and count < 1:
+            # Look for previous feedback
+            count += 1
+            return m.author.name, m.content, m.jump_url, m.author.id, m
+
+        if "dropbox.com" in m.content and count < 1:
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
