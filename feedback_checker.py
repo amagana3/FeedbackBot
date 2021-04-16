@@ -73,6 +73,18 @@ async def on_message(message):
                 await message.delete()
                 await deny_feedback(message)
 
+        # TODO: Test this functionality
+        # Uploaded MP3 file
+        if len(message.attachments) > 1:
+            if message.attachments[0].url.contains('mp3'):
+                if not await validate_feedback(message):
+                    await message.delete()
+                    await deny_feedback(message)
+
+            if message.attachments[0].url.contains('mp4a'):
+                if not await validate_feedback(message):
+                    await message.delete()
+                    await deny_feedback(message)
 
         # Someone wants to know what the last feedback is.
         if '.last' in message.content:
