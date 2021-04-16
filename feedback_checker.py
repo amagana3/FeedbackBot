@@ -35,9 +35,13 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    print("Content:", message.content)
-    print("Channel:", message.channel)
-    print("Attachments: ", message.attachments)
+    temp_logg_dict = {
+        "content": message.content,
+        "channel": message.channel,
+        "attachments": message.attachments
+    }
+
+    print(temp_logg_dict)
     print()
 
     # Should be in feedback channel
