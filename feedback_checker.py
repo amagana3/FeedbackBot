@@ -60,6 +60,12 @@ async def on_message(message):
                 await message.delete()
                 await deny_feedback(message)
 
+        # Uploaded MP3 file
+        if message.attachments[0].url.endswith('MP3'):
+            if not await validate_feedback(message):
+                await message.delete()
+                await deny_feedback(message)
+
         # Someone wants to know what the last feedback is.
         if '.last' in message.content:
             last_feedback_info = await last_feedback(message)
