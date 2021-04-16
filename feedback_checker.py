@@ -49,7 +49,7 @@ async def on_message(message):
         print(temp_logg_dict)
         print()
 
-        # # Verify links
+        # Verify links TODO: Figure out why this throws error.
         # if any(i in allowed_links for i in message.content):
         #     if not await validate_feedback(message):
         #         await message.delete()
@@ -74,14 +74,23 @@ async def on_message(message):
                 await deny_feedback(message)
 
         # TODO: Test this functionality
-        # Uploaded MP3 file
         if len(message.attachments) > 1:
-            if message.attachments[0].url.contains('mp3'):
+            if message.attachments[0].url.contains('.mp3'):
                 if not await validate_feedback(message):
                     await message.delete()
                     await deny_feedback(message)
 
-            if message.attachments[0].url.contains('mp4a'):
+            if message.attachments[0].url.contains('.mp4a'):
+                if not await validate_feedback(message):
+                    await message.delete()
+                    await deny_feedback(message)
+
+            if message.attachments[0].url.contains('.wav'):
+                if not await validate_feedback(message):
+                    await message.delete()
+                    await deny_feedback(message)
+
+            if message.attachments[0].url.contains('.flac'):
                 if not await validate_feedback(message):
                     await message.delete()
                     await deny_feedback(message)
