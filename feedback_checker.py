@@ -35,18 +35,27 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    temp_logg_dict = {
-        "content": message.content,
-        "channel": message.channel,
-        "attachments": message.attachments
-    }
-
-    print(temp_logg_dict)
-    print()
+    allowed_links = ['soundcloud.com', 'soundcloud.app.goo.gl', 'dropbox.com']
 
     # Should be in feedback channel
     if message.channel.name == 'feedback':
-        # Regular soundcloud links
+
+        temp_logg_dict = {
+            "author": message.author.name,
+            "content": message.content,
+            "attachments": message.attachments
+        }
+
+        print(temp_logg_dict)
+        print()
+
+        # # Verify links
+        # if any(i in allowed_links for i in message.content):
+        #     if not await validate_feedback(message):
+        #         await message.delete()
+        #         await deny_feedback(message)
+
+        # Soundcloud dynamic link
         if 'soundcloud.com' in message.content:
             if not await validate_feedback(message):
                 await message.delete()
@@ -64,11 +73,6 @@ async def on_message(message):
                 await message.delete()
                 await deny_feedback(message)
 
-        # Uploaded MP3 file
-        if message.attachments[0].url.endswith('MP3'):
-            if not await validate_feedback(message):
-                await message.delete()
-                await deny_feedback(message)
 
         # Someone wants to know what the last feedback is.
         if '.last' in message.content:
@@ -89,7 +93,8 @@ async def on_message(message):
                                       "acceptable! Anyone who games the system shall be punished. The punishment? "
                                       "Must listen to Baby Shark. Lol jk you'll just be kicked.",
                                 inline=False)
-            embed_var.add_field(name="Command Option: `.last`", value="Shows the previous feedback submission", inline=False)
+            embed_var.add_field(name="Command Option: `.last`", value="Shows the previous feedback submission",
+                                inline=False)
             await message.channel.send(embed=embed_var)
 
 
