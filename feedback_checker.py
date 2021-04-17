@@ -21,7 +21,6 @@ GUILD = os.getenv('DISCORD_GUILD')
 
 client = discord.Client()
 
-
 @client.event
 async def on_ready():
     guild = discord.utils.get(client.guilds, name=GUILD)
@@ -55,45 +54,17 @@ async def on_message(message):
         #         await message.delete()
         #         await deny_feedback(message)
 
-        # Soundcloud dynamic link
-        if 'soundcloud.com' in message.content:
-            if not await validate_feedback(message):
-                await message.delete()
-                await deny_feedback(message)
-
-        # Soundcloud dynamic link
-        if 'soundcloud.app.goo.gl' in message.content:
-            if not await validate_feedback(message):
-                await message.delete()
-                await deny_feedback(message)
-
-        # Dropbox link
-        if 'dropbox.com' in message.content:
+        # Soundcloud & Dropbox links
+        if ('soundcloud.com' or 'soundcloud.app.goo.gl' or 'dropbox.com') in message.content:
             if not await validate_feedback(message):
                 await message.delete()
                 await deny_feedback(message)
 
         # TODO: Test this functionality
-        if len(message.attachments) > 1:
-            if message.attachments[0].url.contains('.mp3'):
-                if not await validate_feedback(message):
-                    await message.delete()
-                    await deny_feedback(message)
-
-            if message.attachments[0].url.contains('.mp4a'):
-                if not await validate_feedback(message):
-                    await message.delete()
-                    await deny_feedback(message)
-
-            if message.attachments[0].url.contains('.wav'):
-                if not await validate_feedback(message):
-                    await message.delete()
-                    await deny_feedback(message)
-
-            if message.attachments[0].url.contains('.flac'):
-                if not await validate_feedback(message):
-                    await message.delete()
-                    await deny_feedback(message)
+        if len(message.attachments) > 1 and message.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac'):
+            if not await validate_feedback(message):
+                await message.delete()
+                await deny_feedback(message)
 
         # Someone wants to know what the last feedback is.
         if '.last' in message.content:
@@ -124,17 +95,12 @@ async def last_feedback(message) -> tuple:
     count = 0
     messages = await message.channel.history(limit=100).flatten()
     for m in messages:
-        if "soundcloud.com" in m.content and count < 1:
+        if ("soundcloud.com" or 'soundcloud.app.goo.gl' or 'dropbox.com') in m.content and count < 1:
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
 
-        if "soundcloud.app.goo.g" in m.content and count < 1:
-            # Look for previous feedback
-            count += 1
-            return m.author.name, m.content, m.jump_url, m.author.id
-
-        if "dropbox.com" in m.content and count < 1:
+        if len(m.attachments) > 1 and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac') and count < 1:
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
@@ -148,17 +114,12 @@ async def previous_feedback(message) -> tuple:
         # This stops from showing the person who just submitted.
         if message.author.id == m.author.id:
             continue
-        if "soundcloud.com" in m.content and count < 1:
+        if ("soundcloud.com" or 'soundcloud.app.goo.gl' or 'dropbox.com') in m.content and count < 1:
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
 
-        if "soundcloud.app.goo.gl" in m.content and count < 1:
-            # Look for previous feedback
-            count += 1
-            return m.author.name, m.content, m.jump_url, m.author.id, m
-
-        if "dropbox.com" in m.content and count < 1:
+        if len(m.attachments) > 1 and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac') and count < 1:
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
