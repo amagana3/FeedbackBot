@@ -21,6 +21,7 @@ GUILD = os.getenv('DISCORD_GUILD')
 
 client = discord.Client()
 
+
 @client.event
 async def on_ready():
     guild = discord.utils.get(client.guilds, name=GUILD)
@@ -34,8 +35,6 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    allowed_links = ['soundcloud.com', 'soundcloud.app.goo.gl', 'dropbox.com']
-
     # Should be in feedback channel
     if message.channel.name == 'feedback':
 
@@ -47,12 +46,6 @@ async def on_message(message):
 
         print(temp_logg_dict)
         print()
-
-        # Verify links TODO: Figure out why this throws error.
-        # if any(i in allowed_links for i in message.content):
-        #     if not await validate_feedback(message):
-        #         await message.delete()
-        #         await deny_feedback(message)
 
         # Soundcloud & Dropbox links
         if ('soundcloud.com' or 'soundcloud.app.goo.gl' or 'dropbox.com') in message.content:
@@ -100,7 +93,7 @@ async def last_feedback(message) -> tuple:
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
 
-        if len(m.attachments) > 1 and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac') and count < 1:
+        if len(m.attachments) > 1 > count and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac'):
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
@@ -119,7 +112,7 @@ async def previous_feedback(message) -> tuple:
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
 
-        if len(m.attachments) > 1 and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac') and count < 1:
+        if len(m.attachments) > 1 > count and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac'):
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
