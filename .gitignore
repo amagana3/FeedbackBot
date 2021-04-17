@@ -6,3 +6,6 @@ env/
 
 # jetbrains
 .idea/
+
+# Background service.
+nohup.out
