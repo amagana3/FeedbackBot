@@ -47,7 +47,7 @@ async def on_message(message):
         print(temp_logg_dict)
         print()
 
-        # Soundcloud & Dropbox links
+        # Verify links
         if ('soundcloud.com' or 'soundcloud.app.goo.gl' or 'dropbox.com') in message.content:
             if not await validate_feedback(message):
                 await message.delete()
