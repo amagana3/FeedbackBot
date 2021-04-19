@@ -91,7 +91,7 @@ async def last_feedback(message) -> tuple:
     count = 0
     messages = await message.channel.history(limit=100).flatten()
     for m in messages:
-        logging.info("message history: " + m)
+        logging.info("message history: ", m)
         if ("soundcloud.com" or 'soundcloud.app.goo.gl' or 'dropbox.com') in m.content and count < 1:
             logging.info("found previous feedback ", m)
             # Look for previous feedback
