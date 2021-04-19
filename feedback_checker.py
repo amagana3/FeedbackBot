@@ -137,16 +137,16 @@ async def validate_feedback(message):
     curr_feedback_user = message.author.name
     curr_feedback_user_id = message.author.id
 
-    logging.info("new feedback submitted by: ", curr_feedback_user)
+    logging.info("new feedback submitted by: {}".format(curr_feedback_user))
 
     resp = await previous_feedback(message)
-    logging.info("found previous feedback: ", resp)
+    logging.info("found previous feedback: {}".format(resp))
 
     prev_feedback_user = resp[0]
     prev_feedback_user_id = resp[3]
     previous_feedback_message = resp[4]
-    logging.info("previous feedback ID: ", previous_feedback_message.id)
-    logging.info("previous feedback author:  ", prev_feedback_user)
+    logging.info("previous feedback ID: {}".format(previous_feedback_message.id))
+    logging.info("previous feedback author: {}".format(prev_feedback_user))
 
     # Check history, has the requester replied to the submitter?
     messages = await message.channel.history(limit=100).flatten()
@@ -165,8 +165,8 @@ async def validate_feedback(message):
                     for mention in y.mentions:
                         if mention.id == prev_feedback_user_id:
                             # We know the new feedback submitter has replied to the previous feedback author.
-                            logging.info("Feedback message: ", y.content)
-                            logging.info("Length of feedback: ", len(y.content))
+                            logging.info("Feedback message: {}".format(y.content))
+                            logging.info("Length of feedback: {}".format(len(y.content)))
                             if len(y.content) >= 100:
                                 return True
                             else:
