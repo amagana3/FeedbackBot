@@ -49,14 +49,14 @@ async def on_message(message):
 
         # Verify links
         if ('soundcloud.com' or 'soundcloud.app.goo.gl' or 'dropbox.com') in message.content:
-            logging.info("link found: ", message.content)
+            logging.info("link found: {}".format(message.content))
             if not await validate_feedback(message):
                 await message.delete()
                 await deny_feedback(message)
 
         # TODO: Test this functionality
         if len(message.attachments) > 1 and message.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac'):
-            logging.info("attachment found: ", message.content)
+            logging.info("attachment found: {}".format(message.attachments))
             if not await validate_feedback(message):
                 await message.delete()
                 await deny_feedback(message)
@@ -87,19 +87,17 @@ async def on_message(message):
 
 # This exists to give the last feedback overall (even if you're the final submission)
 async def last_feedback(message) -> tuple:
-    logging.info("last_feedback() called.")
     count = 0
     messages = await message.channel.history(limit=100).flatten()
     for m in messages:
-        logging.info("message history: ", m)
         if ("soundcloud.com" or 'soundcloud.app.goo.gl' or 'dropbox.com') in m.content and count < 1:
-            logging.info("found previous feedback ", m)
+            logging.info("found previous feedback {}".format(m.content))
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
 
         if len(m.attachments) > 1 > count and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac'):
-            logging.info("found previous feedback ", m)
+            logging.info("found previous feedback {}".format(m.content))
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
@@ -107,22 +105,20 @@ async def last_feedback(message) -> tuple:
 
 # This is to get the previous feedback that DOES NOT INCLUDE the denied one (since we gotta submit to trigger this)
 async def previous_feedback(message) -> tuple:
-    logging.info("previous_feedback() called.")
     count = 0
     messages = await message.channel.history(limit=100).flatten()
     for m in messages:
-        logging.info("message history: ",  m)
         # This stops from showing the person who just submitted.
         if message.author.id == m.author.id:
             continue
         if ("soundcloud.com" or 'soundcloud.app.goo.gl' or 'dropbox.com') in m.content and count < 1:
-            logging.info("found previous feedback ", m)
+            logging.info("found previous feedback {}".format(m.content))
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
 
         if len(m.attachments) > 1 > count and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac'):
-            logging.info("found previous feedback ", m)
+            logging.info("found previous feedback {}".format(m.content))
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
@@ -137,7 +133,6 @@ async def previous_feedback(message) -> tuple:
 # This method checks if the user who submitted feedback has given feedback to previous poster
 # Returns a boolean.
 async def validate_feedback(message):
-    logging.info("validate_feedback() called.")
     # Okay let's get the username of requester and the last feedback submitter.
     curr_feedback_user = message.author.name
     curr_feedback_user_id = message.author.id
