@@ -91,13 +91,13 @@ async def last_feedback(message) -> tuple:
     messages = await message.channel.history(limit=100).flatten()
     for m in messages:
         if ("soundcloud.com" or 'soundcloud.app.goo.gl' or 'dropbox.com') in m.content and count < 1:
-            logging.info("found previous feedback {}".format(m.content))
+            logging.info("found previous feedback: {}".format(m.content))
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
 
         if len(m.attachments) > 1 > count and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac'):
-            logging.info("found previous feedback {}".format(m.content))
+            logging.info("found previous feedback: {}".format(m.content))
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
@@ -112,13 +112,13 @@ async def previous_feedback(message) -> tuple:
         if message.author.id == m.author.id:
             continue
         if ("soundcloud.com" or 'soundcloud.app.goo.gl' or 'dropbox.com') in m.content and count < 1:
-            logging.info("found previous feedback {}".format(m.content))
+            logging.info("found previous feedback: {}".format(m.content))
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
 
         if len(m.attachments) > 1 > count and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac'):
-            logging.info("found previous feedback {}".format(m.content))
+            logging.info("found previous feedback: {}".format(m.content))
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
@@ -137,16 +137,16 @@ async def validate_feedback(message):
     curr_feedback_user = message.author.name
     curr_feedback_user_id = message.author.id
 
-    logging.info("new feedback submitted by:  ",  curr_feedback_user)
+    logging.info("new feedback submitted by: ", curr_feedback_user)
 
     resp = await previous_feedback(message)
-    logging.info("found previous feedback ", resp)
+    logging.info("found previous feedback: ", resp)
 
     prev_feedback_user = resp[0]
     prev_feedback_user_id = resp[3]
     previous_feedback_message = resp[4]
     logging.info("previous feedback ID: ", previous_feedback_message.id)
-    logging.info("previous feedback author:  ",  prev_feedback_user)
+    logging.info("previous feedback author:  ", prev_feedback_user)
 
     # Check history, has the requester replied to the submitter?
     messages = await message.channel.history(limit=100).flatten()
@@ -165,8 +165,8 @@ async def validate_feedback(message):
                     for mention in y.mentions:
                         if mention.id == prev_feedback_user_id:
                             # We know the new feedback submitter has replied to the previous feedback author.
-                            logging.info("Feedback message:", y.content)
-                            logging.info("Length of feedback:", len(y.content))
+                            logging.info("Feedback message: ", y.content)
+                            logging.info("Length of feedback: ", len(y.content))
                             if len(y.content) >= 100:
                                 return True
                             else:
