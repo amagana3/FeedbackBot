@@ -178,7 +178,7 @@ async def validate_feedback(message):
 
 
 async def deny_feedback(message):
-    logging.info("Feedback denied for: ", message.author.name)
+    logging.info("Feedback denied for: {}".format(message.author.name))
 
     last_feedback_info = await previous_feedback(message)
     embed_var = discord.Embed(title="Last Feedback Request", description="By: " + last_feedback_info[0],
