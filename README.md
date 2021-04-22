@@ -1,7 +1,17 @@
 # FeedbackBot
 A discord bot written in python for making sure users leave feedback before requesting some on their own submission.
 
-# Example
-![alt text](example.png)
+## Supported formats:
+- Links of the following:
+    - SoundCloud
+    - Dropbox
+    - SoundCloud mobile
+- Attachments of the following:
+    - .mp3
+    - .mp4a
+    - .wav
+    - .flac
 
-Note: Still a WIP.
+## Example
+- GIF demo coming soon...
+
