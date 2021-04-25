@@ -3,9 +3,8 @@ A discord bot written in python for making sure users leave feedback before requ
 
 ## Supported formats:
 - Links of the following:
-    - SoundCloud
+    - Soundcloud
     - Dropbox
-    - SoundCloud mobile
 - Attachments of the following:
     - .mp3
     - .mp4a
