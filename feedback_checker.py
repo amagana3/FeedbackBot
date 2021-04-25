@@ -24,6 +24,9 @@ GUILD = os.getenv('DISCORD_GUILD')
 
 client = discord.Client()
 
+supported_links = ["soundcloud.com", "soundcloud.app.goo.gl", "dropbox.com"]
+supported_formats = [".mp3", ".mp4a", ".wav", ".flac"]
+
 
 @client.event
 async def on_ready():
@@ -48,16 +51,16 @@ async def on_message(message):
         logging.info(general_log)
 
         # Verify links
-        if ('soundcloud.com' or 'soundcloud.app.goo.gl' or 'dropbox.com') in message.content:
+        if any(link in message.content for link in supported_links):
             logging.info("link found: {}".format(message.content))
             if not await validate_feedback(message):
                 await message.delete()
                 await deny_feedback(message)
 
-        # TODO: Test this functionality
-        if len(message.attachments) > 1 and message.attachments[0].filename.contains('.mp3' or '.mp4a'
-                                                                                     or '.wav' or '.flac'):
-            logging.info("attachment found: {}".format(message.attachments))
+        # Verify attachments
+        if len(message.attachments) == 1 and any(
+                message.attachments[0].filename.endswith(s) for s in supported_formats):
+            logging.info("attachment found: {}".format(message.attachments[0].filename))
             if not await validate_feedback(message):
                 await message.delete()
                 await deny_feedback(message)
@@ -74,14 +77,18 @@ async def on_message(message):
         # Some general info about this bot and the commands available.
         if '.info' in message.content:
             embed_var = discord.Embed(title="FeedbackBot", description="Author: KingMagana69", colour=0x0000FF)
-            embed_var.add_field(name="How do I work?",
+            embed_var.add_field(name="How does the bot work?",
                                 value="The bot checks to see if the last person who submitted feedback gave feedback "
-                                      "to the previous feedback submitter. Confused yet? This can be in the form of a "
-                                      "tag (@), or a direct reply. Soundcloud links and dropbox submissions are "
-                                      "acceptable! Anyone who games the system shall be punished. The punishment? "
-                                      "Must listen to Baby Shark. Lol jk you'll just be kicked.",
+                                      "to the previous submission. Feedback can be given in the form of a "
+                                      "tag (@), or a direct reply. Note: Anyone who games the system will be kicked.",
                                 inline=False)
             embed_var.add_field(name="Command Option: `.last`", value="Shows the previous feedback submission",
+                                inline=False)
+            embed_var.add_field(name="Command Option: `.info`", value="Display how the bot works",
+                                inline=False)
+            embed_var.add_field(name="Supported Links", value="soundcloud, dropbox",
+                                inline=False)
+            embed_var.add_field(name="Supported attachments", value=" `.mp3`, `.mp4a`, `.flac`, `.wav`",
                                 inline=False)
             await message.channel.send(embed=embed_var)
 
@@ -91,18 +98,21 @@ async def last_feedback(message) -> tuple:
     count = 0
     messages = await message.channel.history(limit=100).flatten()
     for m in messages:
-        if ("soundcloud.com" or 'soundcloud.app.goo.gl' or 'dropbox.com') in m.content and count < 1:
-            logging.info("found previous feedback: {}".format(m.content))
+        if any(link in m.content for link in supported_links) and count < 1:
+            logging.info("found link previous feedback: {}".format(m.content))
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
 
-        if len(m.attachments) > 1 > count and m.attachments[0].filename.contains('.mp3' or '.mp4a'
-                                                                                 or '.wav' or '.flac'):
-            logging.info("found previous feedback: {}".format(m.content))
+        if len(m.attachments) == 1 and any(
+                m.attachments[0].filename.endswith(s) for s in supported_formats) and count < 1:
+            logging.info("found attachment previous feedback: {}".format(m.attachments[0].filename))
             # Look for previous feedback
             count += 1
-            return m.author.name, m.content, m.jump_url, m.author.id
+            # Check for empty message attachment
+            if len(m.content) > 1:
+                return m.author.name, m.content, m.jump_url, m.author.id, m
+            return m.author.name, m.attachments[0].filename, m.jump_url, m.author.id, m
 
 
 # This is to get the previous feedback that DOES NOT INCLUDE the denied one (since we gotta submit to trigger this)
@@ -113,18 +123,21 @@ async def previous_feedback(message) -> tuple:
         # This stops from showing the person who just submitted.
         if message.author.id == m.author.id:
             continue
-        if ("soundcloud.com" or 'soundcloud.app.goo.gl' or 'dropbox.com') in m.content and count < 1:
-            logging.info("found previous feedback: {}".format(m.content))
+        if any(link in m.content for link in supported_links) and count < 1:
+            logging.info("found link previous feedback: {}".format(m.content))
             # Look for previous feedback
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
 
-        if len(m.attachments) > 1 > count and m.attachments[0].filename.contains('.mp3' or '.mp4a'
-                                                                                 or '.wav' or '.flac'):
-            logging.info("found previous feedback: {}".format(m.content))
+        if len(m.attachments) == 1 and any(
+                m.attachments[0].filename.endswith(s) for s in supported_formats) and count < 1:
+            logging.info("found attachment previous feedback: {}".format(m.attachments[0].filename))
             # Look for previous feedback
             count += 1
-            return m.author.name, m.content, m.jump_url, m.author.id, m
+            # Check for empty message attachment
+            if len(m.content) > 1:
+                return m.author.name, m.content, m.jump_url, m.author.id, m
+            return m.author.name, m.attachments[0].filename, m.jump_url, m.author.id, m
 
 
 # pseudocode
