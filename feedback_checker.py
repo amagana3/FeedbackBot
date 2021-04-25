@@ -55,7 +55,8 @@ async def on_message(message):
                 await deny_feedback(message)
 
         # TODO: Test this functionality
-        if len(message.attachments) > 1 and message.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac'):
+        if len(message.attachments) > 1 and message.attachments[0].filename.contains('.mp3' or '.mp4a'
+                                                                                     or '.wav' or '.flac'):
             logging.info("attachment found: {}".format(message.attachments))
             if not await validate_feedback(message):
                 await message.delete()
@@ -96,7 +97,8 @@ async def last_feedback(message) -> tuple:
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
 
-        if len(m.attachments) > 1 > count and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac'):
+        if len(m.attachments) > 1 > count and m.attachments[0].filename.contains('.mp3' or '.mp4a'
+                                                                                 or '.wav' or '.flac'):
             logging.info("found previous feedback: {}".format(m.content))
             # Look for previous feedback
             count += 1
@@ -117,7 +119,8 @@ async def previous_feedback(message) -> tuple:
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
 
-        if len(m.attachments) > 1 > count and m.attachments[0].url.contains('.mp3' or '.mp4a' or '.wav' or '.flac'):
+        if len(m.attachments) > 1 > count and m.attachments[0].filename.contains('.mp3' or '.mp4a'
+                                                                                 or '.wav' or '.flac'):
             logging.info("found previous feedback: {}".format(m.content))
             # Look for previous feedback
             count += 1
