@@ -104,15 +104,7 @@ async def last_feedback(message) -> tuple:
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id
 
-        if len(m.attachments) == 1 and any(
-                m.attachments[0].filename.endswith(s) for s in supported_formats) and count < 1:
-            logging.info("found attachment previous feedback: {}".format(m.attachments[0].filename))
-            # Look for previous feedback
-            count += 1
-            # Check for empty message attachment
-            if len(m.content) > 1:
-                return m.author.name, m.content, m.jump_url, m.author.id, m
-            return m.author.name, m.attachments[0].filename, m.jump_url, m.author.id, m
+        check_for_attachment(m, count)
 
 
 # This is to get the previous feedback that DOES NOT INCLUDE the denied one (since we gotta submit to trigger this)
@@ -129,15 +121,22 @@ async def previous_feedback(message) -> tuple:
             count += 1
             return m.author.name, m.content, m.jump_url, m.author.id, m
 
-        if len(m.attachments) == 1 and any(
-                m.attachments[0].filename.endswith(s) for s in supported_formats) and count < 1:
-            logging.info("found attachment previous feedback: {}".format(m.attachments[0].filename))
-            # Look for previous feedback
-            count += 1
-            # Check for empty message attachment
-            if len(m.content) > 1:
-                return m.author.name, m.content, m.jump_url, m.author.id, m
-            return m.author.name, m.attachments[0].filename, m.jump_url, m.author.id, m
+        check_for_attachment(m, count)
+
+
+def check_for_attachment(m, count):
+    """Checks if attachment is found in message"""
+    if len(m.attachments) != 1 or not any(
+            m.attachments[0].filename.endswith(s) for s in supported_formats) or count >= 1:
+        return
+
+    logging.info("found attachment previous feedback: {}".format(m.attachments[0].filename))
+    # Look for previous feedback
+    count += 1
+    # Check for empty message attachment
+    if len(m.content) > 1:
+        return m.author.name, m.content, m.jump_url, m.author.id, m
+    return m.author.name, m.attachments[0].filename, m.jump_url, m.author.id, m
 
 
 # pseudocode
