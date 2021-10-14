@@ -15,6 +15,7 @@ import logging
 import os
 
 import discord
+from discord import Message
 from dotenv import load_dotenv
 
 from bot_responses import last_feedback_message, info_message, deny_feedback_message
@@ -37,7 +38,7 @@ async def on_ready():
 
 
 @client.event
-async def on_message(message):
+async def on_message(message: Message):
     # The bot called, ignore.
     if message.author == client.user:
         return
@@ -74,7 +75,7 @@ async def on_message(message):
 
 
 # This exists to give the last feedback overall (even if you're the final submission)
-async def last_feedback(message) -> MessageResponseContext:
+async def last_feedback(message: Message) -> MessageResponseContext:
     count = 0
     previous_messages = await message.channel.history(limit=100).flatten()
     for m in previous_messages:
@@ -89,12 +90,12 @@ async def last_feedback(message) -> MessageResponseContext:
 
 
 # This is to get the previous feedback that DOES NOT INCLUDE the denied one (since we gotta submit to trigger this)
-async def previous_feedback(current_message) -> MessageResponseContext:
+async def previous_feedback(message: Message) -> MessageResponseContext:
     count = 0
-    previous_messages = await current_message.channel.history(limit=100).flatten()
+    previous_messages = await message.channel.history(limit=100).flatten()
     for m in previous_messages:
         # This stops from showing the person who just submitted.
-        if current_message.author.id != m.author.id:
+        if message.author.id != m.author.id:
             link_exists = check_for_link(m, count)
             attach_exists = check_for_attachment(m, count)
 
@@ -116,7 +117,7 @@ async def previous_feedback(current_message) -> MessageResponseContext:
 '''
 
 
-async def validate_feedback(message) -> bool:
+async def validate_feedback(message: Message) -> bool:
     """ Checks to make sure the one submitting a track has given feedback. """
 
     # Grab current submitter info
@@ -164,7 +165,7 @@ async def validate_feedback(message) -> bool:
     return False
 
 
-async def deny_feedback(message) -> None:
+async def deny_feedback(message: Message) -> None:
     if not await validate_feedback(message):
         await message.delete()
         logging.info("Feedback denied for: {}".format(message.author.name))

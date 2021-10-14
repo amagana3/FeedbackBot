@@ -1,10 +1,12 @@
+from discord import Message
+
 from constants import MessageResponseContext, SupportedLinks, SupportedFormats
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(funcName)s:%(lineno)d - %(message)s')
 
 
-def check_for_link(message, count) -> MessageResponseContext or None:
+def check_for_link(message: Message, count: int) -> MessageResponseContext or None:
     if not any(link.value in message.content for link in SupportedLinks) or count >= 1:
         return None
 
@@ -16,7 +18,7 @@ def check_for_link(message, count) -> MessageResponseContext or None:
                                   message_id=message.id)
 
 
-def check_for_attachment(message, count) -> MessageResponseContext or None:
+def check_for_attachment(message: Message, count: int) -> MessageResponseContext or None:
     """Checks if attachment is found in message"""
     if len(message.attachments) != 1 or not any(
             message.attachments[0].filename.endswith(fmt.value) for fmt in SupportedFormats) or count >= 1:
