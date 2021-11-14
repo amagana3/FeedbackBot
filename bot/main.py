@@ -34,7 +34,7 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(funcName)s:%(l
 @client.event
 async def on_ready():
     guild = discord.utils.get(client.guilds, name=GUILD)
-    logging.info(f'{client.user} is connected to the following GUILD: {guild.name} (ID: {guild.id}')
+    logging.info(f'{client.user} is connected to the following GUILD: {guild.name} (ID: {guild.id})')
 
 
 @client.event
