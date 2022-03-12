@@ -4,12 +4,12 @@ from discord import Embed
 from constants import MessageResponseContext
 
 
-def last_feedback_message(last_feedback_info: MessageResponseContext) -> Embed:
+def last_feedback_message(prev_feedback_metadata: MessageResponseContext) -> Embed:
     """ Embedded response for .last"""
-    embed = discord.Embed(title="Last Feedback Request", description="By: " + last_feedback_info.author,
+    embed = discord.Embed(title="Last Feedback Request", description="By: " + prev_feedback_metadata.author,
                           color=0x00ff00)
-    embed.add_field(name="Original Message", value=last_feedback_info.content, inline=False)
-    embed.add_field(name="Link to Message", value=last_feedback_info.jump_url, inline=False)
+    embed.add_field(name="Original Message", value=prev_feedback_metadata.content, inline=False)
+    embed.add_field(name="Link to Message", value=prev_feedback_metadata.jump_url, inline=False)
     return embed
 
 
@@ -32,10 +32,10 @@ def info_message() -> Embed:
     return embed
 
 
-def deny_feedback_message(last_feedback_info: MessageResponseContext) -> Embed:
+def deny_feedback_message(prev_feedback_metadata: MessageResponseContext) -> Embed:
     """ Embedded response for denied feedback"""
-    embed = discord.Embed(title="Last Feedback Request", description="By: " + last_feedback_info.author,
+    embed = discord.Embed(title="Last Feedback Request", description="By: " + prev_feedback_metadata.author,
                           color=0xFF0000)
-    embed.add_field(name="Original Message", value=last_feedback_info.content, inline=False)
-    embed.add_field(name="Link to Message", value=last_feedback_info.jump_url, inline=False)
+    embed.add_field(name="Original Message", value=prev_feedback_metadata.content, inline=False)
+    embed.add_field(name="Link to Message", value=prev_feedback_metadata.jump_url, inline=False)
     return embed
