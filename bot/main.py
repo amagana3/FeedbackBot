@@ -155,7 +155,7 @@ async def validate_feedback(message: Message) -> bool:
                     # If they have given mentions, have they been to the prev feedback?
                     for mention in y.mentions:
                         if mention.id == prev_fb_user_id:
-                            # We know the new feedback submitter has replied to the previous feedback author.
+                            # We know the new feedback submitter has given feedback to prev. submission
                             logging.info("feedback message: {}".format(y.content))
                             logging.info("length of feedback: {}".format(len(y.content)))
                             # Must be 100 chars of feedback.
