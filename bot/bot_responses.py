@@ -1,5 +1,5 @@
 import discord
-from discord import Embed
+from discord import Embed, Color
 
 from constants import MessageResponseContext
 
@@ -7,7 +7,7 @@ from constants import MessageResponseContext
 def last_feedback_message(prev_feedback_metadata: MessageResponseContext) -> Embed:
     """ Embedded response for .last"""
     embed = discord.Embed(title="Last Feedback Request", description="By: " + prev_feedback_metadata.author,
-                          color=0x00ff00)
+                          color=Color.green())
     embed.add_field(name="Original Message", value=prev_feedback_metadata.content, inline=False)
     embed.add_field(name="Link to Message", value=prev_feedback_metadata.jump_url, inline=False)
     return embed
@@ -15,7 +15,7 @@ def last_feedback_message(prev_feedback_metadata: MessageResponseContext) -> Emb
 
 def info_message() -> Embed:
     """ Embedded response for .info"""
-    embed = discord.Embed(title="FeedbackBot", description="Author: KingMagana69", colour=0x0000FF)
+    embed = discord.Embed(title="FeedbackBot", description="Author: KingMagana69", color=Color.blue())
     embed.add_field(name="How does the bot work?",
                     value="The bot checks to see if the last person who submitted feedback gave feedback "
                           "to the previous submitter. Feedback can be given in the form of a "
@@ -35,7 +35,7 @@ def info_message() -> Embed:
 def deny_feedback_message(prev_feedback_metadata: MessageResponseContext) -> Embed:
     """ Embedded response for denied feedback"""
     embed = discord.Embed(title="Last Feedback Request", description="By: " + prev_feedback_metadata.author,
-                          color=0xFF0000)
+                          color=Color.red())
     embed.add_field(name="Original Message", value=prev_feedback_metadata.content, inline=False)
     embed.add_field(name="Link to Message", value=prev_feedback_metadata.jump_url, inline=False)
     return embed
