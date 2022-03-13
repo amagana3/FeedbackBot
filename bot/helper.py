@@ -1,16 +1,16 @@
 from discord import Message
 
 from constants import MessageResponseContext, SupportedLinks, SupportedFormats
-import logging
+import log
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(funcName)s:%(lineno)d - %(message)s')
+logger = log.setup_logger('root')
 
 
 def check_for_link(message: Message, count: int) -> MessageResponseContext or None:
     if not any(link.value in message.content for link in SupportedLinks) or count >= 1:
         return None
 
-    logging.info("found link previous feedback: {}".format(message.content))
+    logger.info("found link previous feedback: {}".format(message.content))
     # Look for previous feedback
     count += 1
     return MessageResponseContext(author=message.author.name, content=message.content, jump_url=message.jump_url,
@@ -24,7 +24,7 @@ def check_for_attachment(message: Message, count: int) -> MessageResponseContext
             message.attachments[0].filename.endswith(fmt.value) for fmt in SupportedFormats) or count >= 1:
         return None
 
-    logging.info("found attachment previous feedback: {}".format(message.attachments[0].filename))
+    logger.info("found attachment previous feedback: {}".format(message.attachments[0].filename))
     # Look for previous feedback
     count += 1
     # Check for empty message attachment

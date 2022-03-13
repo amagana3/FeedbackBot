@@ -11,7 +11,7 @@ Solution:
         Then we decline the feedback, and tell them to give feedback to previous user.
 """
 
-import logging
+import log
 import os
 
 import discord
@@ -28,13 +28,14 @@ GUILD = os.getenv('DISCORD_GUILD')
 
 client = discord.Client()
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(funcName)s:%(lineno)d - %(message)s')
+# Setup logger
+logger = log.setup_logger(name='root')
 
 
 @client.event
 async def on_ready():
     guild = discord.utils.get(client.guilds, name=GUILD)
-    logging.info(f'{client.user} is connected to the following GUILD: {guild.name} (ID: {guild.id})')
+    logger.info(f'{client.user} is connected to the following GUILD: {guild.name} (ID: {guild.id})')
 
 
 @client.event
@@ -45,23 +46,24 @@ async def on_message(message: Message):
 
     # Should be in feedback channel
     if message.channel.name == 'feedback':
+
         general_log = {
             "author": message.author.name,
             "content": message.content,
             "attachments": message.attachments
         }
 
-        logging.info(general_log)
+        logger.info(general_log)
 
         # Verify links
         if any(link.value in message.content for link in SupportedLinks):
-            logging.info("link found: {}".format(message.content))
+            logger.info("link found: {}".format(message.content))
             await deny_feedback_submission(message)
 
         # Verify attachments
         if len(message.attachments) == 1 and any(
                 message.attachments[0].filename.endswith(fmt.value) for fmt in SupportedFormats):
-            logging.info("attachment found: {}".format(message.attachments[0].filename))
+            logger.info("attachment found: {}".format(message.attachments[0].filename))
             await deny_feedback_submission(message)
 
         # Someone wants to know what the last feedback is.
@@ -123,21 +125,21 @@ async def validate_feedback(message: Message) -> bool:
     # Grab current submitter info
     current_user = message.author.name
     current_user_id = message.author.id
-    logging.info("new feedback submitted by: {}".format(current_user))
+    logger.info("new feedback submitted by: {}".format(current_user))
 
     # Grab previous feedback submission info
     prev_fb_submission = await previous_feedback(message)
     if prev_fb_submission is None:
-        logging.info("no previous feedback track exists")
+        logger.info("no previous feedback track exists")
         return True
 
-    logging.info("found previous feedback: {}".format(prev_fb_submission))
+    logger.info("found previous feedback: {}".format(prev_fb_submission))
 
     prev_fb_user = prev_fb_submission.author
     prev_fb_user_id = prev_fb_submission.author_id
     prev_fb_message_id = prev_fb_submission.message_id
-    logging.info("previous feedback ID: {}".format(prev_fb_message_id))
-    logging.info("previous feedback author: {}".format(prev_fb_user))
+    logger.info("previous feedback ID: {}".format(prev_fb_message_id))
+    logger.info("previous feedback author: {}".format(prev_fb_user))
 
     # Check history, has the requester replied to the submitter?
     previous_messages = await message.channel.history(limit=100).flatten()
@@ -156,8 +158,8 @@ async def validate_feedback(message: Message) -> bool:
                     for mention in y.mentions:
                         if mention.id == prev_fb_user_id:
                             # We know the new feedback submitter has given feedback to prev. submission
-                            logging.info("feedback message: {}".format(y.content))
-                            logging.info("length of feedback: {}".format(len(y.content)))
+                            logger.info("feedback message: {}".format(y.content))
+                            logger.info("length of feedback: {}".format(len(y.content)))
                             # Must be 100 chars of feedback.
                             if len(y.content) >= 100:
                                 return True
@@ -172,7 +174,7 @@ async def validate_feedback(message: Message) -> bool:
 async def deny_feedback_submission(message: Message) -> None:
     if not await validate_feedback(message):
         await message.delete()
-        logging.info("feedback submission denied for: {}".format(message.author.name))
+        logger.info("feedback submission denied for: {}".format(message.author.name))
         last_feedback_info = await previous_feedback(message)
         await message.channel.send(
             message.author.mention + ", :x:** Feedback Denied! **:x: \n Please give feedback to the following: ",
