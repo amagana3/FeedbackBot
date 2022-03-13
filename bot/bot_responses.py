@@ -1,7 +1,17 @@
 import discord
+import re
 from discord import Embed, Color
 
-from constants import MessageResponseContext
+from constants import MessageResponseContext, SupportedLinks, SupportedFormats
+
+supported_links_list = [link.value for link in SupportedLinks]
+supported_links_str = ", ".join(supported_links_list)
+
+supported_formats_list = [formats.value for formats in SupportedFormats]
+supported_formats_str = ", ".join(supported_formats_list)
+
+regex = r'([A-Za-z.]+)'
+replace = r'`\1`'
 
 
 def last_feedback_message(prev_feedback_metadata: MessageResponseContext) -> Embed:
@@ -25,9 +35,9 @@ def info_message() -> Embed:
                     inline=False)
     embed.add_field(name="Command Option: `.info`", value="Display how the bot works",
                     inline=False)
-    embed.add_field(name="Supported Links", value="soundcloud, dropbox",
+    embed.add_field(name="Supported Links", value=re.sub(regex, replace, supported_links_str),
                     inline=False)
-    embed.add_field(name="Supported attachments", value=" `.mp3`, `.mp4a`, `.flac`, `.wav`",
+    embed.add_field(name="Supported attachments", value=re.sub(regex, replace, supported_formats_str),
                     inline=False)
     return embed
 
