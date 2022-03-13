@@ -45,35 +45,42 @@ async def on_message(message: Message):
         return
 
     # Should be in feedback channel
-    if message.channel.name == 'feedback':
+    if message.channel.name != 'feedback':
+        return
 
-        general_log = {
-            "author": message.author.name,
-            "content": message.content,
-            "attachments": message.attachments
-        }
+    general_log = {
+        "author": message.author.name,
+        "content": message.content,
+        "attachments": message.attachments
+    }
 
-        logger.info(general_log)
+    logger.info(general_log)
 
-        # Verify links
-        if any(link.value in message.content for link in SupportedLinks):
-            logger.info("link found: {}".format(message.content))
+    await validate_submission(message)
+
+    # Someone wants to know what the last feedback is.
+    if '.last' in message.content:
+        last_feedback_info = await last_feedback(message)
+        await message.channel.send(embed=last_feedback_message(last_feedback_info))
+
+    # Some general info about this bot and the commands available.
+    if '.info' in message.content:
+        await message.channel.send(embed=info_message())
+
+
+async def validate_submission(message: Message) -> None:
+    # Validate links
+    if any(link.value in message.content for link in SupportedLinks):
+        logger.info("link found: {}".format(message.content))
+        if not await validate_feedback(message):
             await deny_feedback_submission(message)
 
-        # Verify attachments
-        if len(message.attachments) == 1 and any(
-                message.attachments[0].filename.endswith(fmt.value) for fmt in SupportedFormats):
-            logger.info("attachment found: {}".format(message.attachments[0].filename))
+    # Validate attachments
+    if len(message.attachments) == 1 and any(
+            message.attachments[0].filename.endswith(fmt.value) for fmt in SupportedFormats):
+        logger.info("attachment found: {}".format(message.attachments[0].filename))
+        if not await validate_feedback(message):
             await deny_feedback_submission(message)
-
-        # Someone wants to know what the last feedback is.
-        if '.last' in message.content:
-            last_feedback_info = await last_feedback(message)
-            await message.channel.send(embed=last_feedback_message(last_feedback_info))
-
-        # Some general info about this bot and the commands available.
-        if '.info' in message.content:
-            await message.channel.send(embed=info_message())
 
 
 # This exists to give the last feedback overall (even if you're the final submission)
@@ -82,12 +89,11 @@ async def last_feedback(message: Message) -> MessageResponseContext:
     previous_messages = await message.channel.history(limit=100).flatten()
     for m in previous_messages:
         link_exists = check_for_link(m, count)
-        attach_exists = check_for_attachment(m, count)
-
-        if link_exists is not None:
+        if link_exists:
             return link_exists
 
-        if attach_exists is not None:
+        attach_exists = check_for_attachment(m, count)
+        if attach_exists:
             return attach_exists
 
 
@@ -99,12 +105,11 @@ async def previous_feedback(message: Message) -> MessageResponseContext:
         # This stops from showing the person who just submitted.
         if message.author.id != m.author.id:
             link_exists = check_for_link(m, count)
-            attach_exists = check_for_attachment(m, count)
-
-            if link_exists is not None:
+            if link_exists:
                 return link_exists
 
-            if attach_exists is not None:
+            attach_exists = check_for_attachment(m, count)
+            if attach_exists:
                 return attach_exists
 
 
@@ -172,13 +177,12 @@ async def validate_feedback(message: Message) -> bool:
 
 
 async def deny_feedback_submission(message: Message) -> None:
-    if not await validate_feedback(message):
-        await message.delete()
-        logger.info("feedback submission denied for: {}".format(message.author.name))
-        last_feedback_info = await previous_feedback(message)
-        await message.channel.send(
-            message.author.mention + ", :x:** Feedback Denied! **:x: \n Please give feedback to the following: ",
-            embed=deny_feedback_message(last_feedback_info))
+    await message.delete()
+    logger.info("feedback submission denied for: {}".format(message.author.name))
+    last_feedback_info = await previous_feedback(message)
+    await message.channel.send(
+        message.author.mention + ", :x:** Feedback Denied! **:x: \n Please give feedback to the following: ",
+        embed=deny_feedback_message(last_feedback_info))
 
 
 client.run(TOKEN)
