@@ -56,7 +56,8 @@ async def on_message(message: Message):
 
     logger.info(general_log)
 
-    await validate_submission(message)
+    await validate_link(message)
+    await validate_attachment(message)
 
     # Someone wants to know what the last feedback is.
     if '.last' in message.content:
@@ -68,47 +69,51 @@ async def on_message(message: Message):
         await message.channel.send(embed=info_message())
 
 
-async def validate_submission(message: Message) -> None:
+async def validate_link(message: Message) -> None:
     # Validate links
     if any(link.value in message.content for link in SupportedLinks):
         logger.info("link found: {}".format(message.content))
         if not await validate_feedback(message):
             await deny_feedback_submission(message)
 
+
+async def validate_attachment(message: Message) -> None:
     # Validate attachments
     if len(message.attachments) == 1 and any(
             message.attachments[0].filename.endswith(fmt.value) for fmt in SupportedFormats):
         logger.info("attachment found: {}".format(message.attachments[0].filename))
         if not await validate_feedback(message):
             await deny_feedback_submission(message)
+    elif len(message.attachments) > 1:
+        logger.info("more than one attachment is not allowed")
+        await message.channel.send(
+            message.author.mention + ", :x:** Feedback Denied! **:x: \n Only 1 attachment is allowed!!! ")
 
 
 # This exists to give the last feedback overall (even if you're the final submission)
 async def last_feedback(message: Message) -> MessageResponseContext:
-    count = 0
     previous_messages = await message.channel.history(limit=100).flatten()
-    for m in previous_messages:
-        link_exists = check_for_link(m, count)
+    for msg in previous_messages:
+        link_exists = check_for_link(msg)
         if link_exists:
             return link_exists
 
-        attach_exists = check_for_attachment(m, count)
+        attach_exists = check_for_attachment(msg)
         if attach_exists:
             return attach_exists
 
 
 # This is to get the previous feedback that DOES NOT INCLUDE the denied one (since we gotta submit to trigger this)
 async def previous_feedback(message: Message) -> MessageResponseContext:
-    count = 0
     previous_messages = await message.channel.history(limit=100).flatten()
     for m in previous_messages:
         # This stops from showing the person who just submitted.
         if message.author.id != m.author.id:
-            link_exists = check_for_link(m, count)
+            link_exists = check_for_link(m)
             if link_exists:
                 return link_exists
 
-            attach_exists = check_for_attachment(m, count)
+            attach_exists = check_for_attachment(m)
             if attach_exists:
                 return attach_exists
 
