@@ -18,7 +18,7 @@ import discord
 from discord import Message
 from dotenv import load_dotenv
 
-from bot_responses import last_feedback_message, info_message, deny_feedback_message
+from bot_responses import previous_feedback_submission_message, info_message, deny_feedback_submission_message
 from constants import SupportedLinks, SupportedFormats, MessageResponseContext
 from helper import check_for_link, check_for_attachment
 
@@ -62,7 +62,7 @@ async def on_message(message: Message):
     # Someone wants to know what the last feedback is.
     if '.last' in message.content:
         last_feedback_info = await last_feedback(message)
-        await message.channel.send(embed=last_feedback_message(last_feedback_info))
+        await message.channel.send(embed=previous_feedback_submission_message(last_feedback_info))
 
     # Some general info about this bot and the commands available.
     if '.info' in message.content:
@@ -73,7 +73,7 @@ async def validate_link(message: Message) -> None:
     # Validate links
     if any(link.value in message.content for link in SupportedLinks):
         logger.info("link found: {}".format(message.content))
-        if not await validate_feedback(message):
+        if not await validate_feedback_submission(message):
             await deny_feedback_submission(message)
 
 
@@ -82,7 +82,7 @@ async def validate_attachment(message: Message) -> None:
     if len(message.attachments) == 1 and any(
             message.attachments[0].filename.endswith(fmt.value) for fmt in SupportedFormats):
         logger.info("attachment found: {}".format(message.attachments[0].filename))
-        if not await validate_feedback(message):
+        if not await validate_feedback_submission(message):
             await deny_feedback_submission(message)
     elif len(message.attachments) > 1:
         logger.info("more than one attachment is not allowed")
@@ -121,7 +121,7 @@ async def previous_feedback(message: Message) -> MessageResponseContext:
 
 
 ''' --- pseudocode --- 
-    validate_feedback()
+    validate_feedback_submission()
     Objective: Look for the last feedback submission.
     Approach:
     - Grab all messages from the time the person submitted the newest feedback till the last.
@@ -131,7 +131,7 @@ async def previous_feedback(message: Message) -> MessageResponseContext:
 '''
 
 
-async def validate_feedback(message: Message) -> bool:
+async def validate_feedback_submission(message: Message) -> bool:
     """ Checks to make sure the one submitting a track has given feedback. """
 
     # Grab current submitter info
@@ -160,26 +160,30 @@ async def validate_feedback(message: Message) -> bool:
     # Grab all messages until the previous feedback
     for msg in previous_messages:
         count += 1
-        if prev_fb_message_id == msg.id:
-            # Got all messages till previous, check if the messages have mentions from original author
-            messages_till_prev_fb = await message.channel.history(limit=count).flatten()
-            for sub_msg in messages_till_prev_fb:
-                # Now we check the messages the submitter has posted (since prev feedback)
-                if sub_msg.author.id == current_user_id:
-                    # If they have given mentions, have they been to the prev feedback?
-                    for mention in sub_msg.mentions:
-                        if mention.id == prev_fb_user_id:
-                            # We know the new feedback submitter has given feedback to prev. submission
-                            logger.info(
-                                "feedback message: {}, length: {}".format(sub_msg.content, len(sub_msg.content)))
-                            # Must be 100 chars of feedback.
-                            if len(sub_msg.content) >= 100:
-                                return True
-                            else:
-                                await message.channel.send(
-                                    "Please make sure your submission is over 100 characters! "
-                                    "That should be about a couple sentences on average. :)")
-                                return False
+        if prev_fb_message_id != msg.id:
+            continue
+        # Got all messages till previous, check if the messages have mentions from original author
+        messages_till_prev_fb = await message.channel.history(limit=count).flatten()
+        for sub_msg in messages_till_prev_fb:
+            # Now we check the messages the submitter has posted (since prev feedback)
+            if sub_msg.author.id != current_user_id:
+                continue
+            # If they have given mentions, have they been to the prev feedback?
+            for mention in sub_msg.mentions:
+                if mention.id != prev_fb_user_id:
+                    continue
+                # We know the new feedback submitter has given feedback to prev. submission
+                logger.info(
+                    "feedback message: {} \n"
+                    "length: {}".format(sub_msg.content, len(sub_msg.content)))
+                # Must be 100 chars of feedback.
+                if len(sub_msg.content) >= 100:
+                    return True
+                else:
+                    await message.channel.send(
+                        "Please make sure your submission is over 100 characters! "
+                        "That should be about a couple sentences on average. :)")
+                    return False
     return False
 
 
@@ -192,7 +196,7 @@ async def deny_feedback_submission(message: Message) -> None:
         message.author.mention +
         ", :x:** Feedback Request Denied! **:x: \n "
         "Please direct reply or mention @" + last_feedback_info.author + " the previous feedback submission: ",
-        embed=deny_feedback_message(last_feedback_info))
+        embed=deny_feedback_submission_message(last_feedback_info))
 
 
 client.run(TOKEN)

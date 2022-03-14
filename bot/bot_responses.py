@@ -4,17 +4,20 @@ from discord import Embed, Color
 
 from constants import MessageResponseContext, SupportedLinks, SupportedFormats
 
-supported_links_list = [link.value for link in SupportedLinks]
-supported_links_str = ", ".join(supported_links_list)
-
-supported_formats_list = [formats.value for formats in SupportedFormats]
-supported_formats_str = ", ".join(supported_formats_list)
-
 regex = r'([A-Za-z.]+)'
 replace = r'`\1`'
 
+supported_links_list = [link.value for link in SupportedLinks]
+supported_links_str = ", ".join(supported_links_list)
+supported_links = re.sub(regex, replace, supported_links_str)
 
-def last_feedback_message(prev_feedback_metadata: MessageResponseContext) -> Embed:
+supported_formats_list = [formats.value for formats in SupportedFormats]
+supported_formats_str = ", ".join(supported_formats_list)
+supported_formats = re.sub(regex, replace, supported_formats_str)
+
+
+# TODO: Introduce a design pattern for building these messages, generically.
+def previous_feedback_submission_message(prev_feedback_metadata: MessageResponseContext) -> Embed:
     """ Embedded response for .last"""
     embed = discord.Embed(title="Previous Feedback Submission", description="By: " + prev_feedback_metadata.author,
                           color=Color.green())
@@ -35,14 +38,14 @@ def info_message() -> Embed:
                     inline=False)
     embed.add_field(name="Command Option: `.info`", value="Display how the bot works",
                     inline=False)
-    embed.add_field(name="Supported Links", value=re.sub(regex, replace, supported_links_str),
+    embed.add_field(name="Supported Links", value=supported_links,
                     inline=False)
-    embed.add_field(name="Supported attachments", value=re.sub(regex, replace, supported_formats_str),
+    embed.add_field(name="Supported attachments", value=supported_formats,
                     inline=False)
     return embed
 
 
-def deny_feedback_message(prev_feedback_metadata: MessageResponseContext) -> Embed:
+def deny_feedback_submission_message(prev_feedback_metadata: MessageResponseContext) -> Embed:
     """ Embedded response for denied feedback"""
     embed = discord.Embed(title="Previous Feedback Submission", description="By: " + prev_feedback_metadata.author,
                           color=Color.red())
