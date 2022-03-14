@@ -16,7 +16,7 @@ replace = r'`\1`'
 
 def last_feedback_message(prev_feedback_metadata: MessageResponseContext) -> Embed:
     """ Embedded response for .last"""
-    embed = discord.Embed(title="Last Feedback Request", description="By: " + prev_feedback_metadata.author,
+    embed = discord.Embed(title="Previous Feedback Submission", description="By: " + prev_feedback_metadata.author,
                           color=Color.green())
     embed.add_field(name="Original Message", value=prev_feedback_metadata.content, inline=False)
     embed.add_field(name="Link to Message", value=prev_feedback_metadata.jump_url, inline=False)
@@ -44,7 +44,7 @@ def info_message() -> Embed:
 
 def deny_feedback_message(prev_feedback_metadata: MessageResponseContext) -> Embed:
     """ Embedded response for denied feedback"""
-    embed = discord.Embed(title="Last Feedback Request", description="By: " + prev_feedback_metadata.author,
+    embed = discord.Embed(title="Previous Feedback Submission", description="By: " + prev_feedback_metadata.author,
                           color=Color.red())
     embed.add_field(name="Original Message", value=prev_feedback_metadata.content, inline=False)
     embed.add_field(name="Link to Message", value=prev_feedback_metadata.jump_url, inline=False)
