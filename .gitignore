@@ -9,3 +9,6 @@ env/
 
 # Background service.
 nohup.out
+
+# PyCache
+__pycache__/
