@@ -12,3 +12,6 @@ nohup.out
 
 # PyCache
 __pycache__/
+
+# Misc
+notes.txt
