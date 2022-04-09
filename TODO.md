@@ -1,0 +1,11 @@
+# TODO
+- [ ] Semantic Versioning
+- [ ] Display current version in `.info` command
+- [ ] CI/CD
+  - [ ] Github Actions
+  - [ ] Release strategy (semver on merge)
+  - [ ] Build
+  - [ ] Deploy to EC2
+- [ ] Containerize?
+- [ ] EKS / ECS Fargate?
+- [ ] Beanstalk?
