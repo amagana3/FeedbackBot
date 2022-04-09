@@ -62,6 +62,7 @@ async def on_message(message: Message):
     # Someone wants to know what the last feedback is.
     if '.last' in message.content:
         last_feedback_info = await last_feedback(message)
+        logger.info('last feedback message length: {}'.format(len(last_feedback_info.content)))
         await message.channel.send(embed=previous_feedback_submission_message(last_feedback_info))
 
     # Some general info about this bot and the commands available.
