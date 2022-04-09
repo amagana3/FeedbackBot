@@ -21,7 +21,7 @@ def previous_feedback_submission_message(prev_feedback_metadata: MessageResponse
     """ Embedded response for .last"""
     embed = discord.Embed(title="Previous Feedback Submission", description="By: " + prev_feedback_metadata.author,
                           color=Color.green())
-    embed.add_field(name="Original Message", value=prev_feedback_metadata.content, inline=False)
+    embed.add_field(name="Original Message", value=prev_feedback_metadata.content[0:997] + "...", inline=False)
     embed.add_field(name="Link to Message", value=prev_feedback_metadata.jump_url, inline=False)
     return embed
 
