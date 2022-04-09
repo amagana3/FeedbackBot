@@ -1,11 +1,20 @@
 # TODO
-- [ ] Semantic Versioning
-- [ ] Display current version in `.info` command
-- [ ] CI/CD
-  - [ ] Github Actions
-  - [ ] Release strategy (semver on merge)
-  - [ ] Build
-  - [ ] Deploy to EC2
-- [ ] Containerize?
-- [ ] EKS / ECS Fargate?
-- [ ] Beanstalk?
+<details>
+  <summary>CI/CD Pipelines</summary>
+  
+  - Semnatic Versioning
+    - [ ] Display current version in `.info` command
+  - Github Actions
+    - [ ] Release Strategy
+    - [ ] Build Python Application
+    - [ ] Package Python Application
+    - [ ] Deploy to EC2
+</details>
+<details>
+  <summary>Backlog</summary>
+  
+  - Determine Deployment Service
+    - [ ] Containerize?
+    - [ ] EKS / ECS Fargate?
+    - [ ] Beanstalk?
+</details>
