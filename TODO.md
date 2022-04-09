@@ -2,9 +2,9 @@
 <details>
   <summary>CI/CD Pipelines</summary>
   
-  - Semnatic Versioning
+  - Semantic Versioning
     - [ ] Display current version in `.info` command
-  - Github Actions
+  - GitHub Actions
     - [ ] Release Strategy
     - [ ] Build Python Application
     - [ ] Package Python Application
