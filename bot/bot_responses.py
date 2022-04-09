@@ -4,7 +4,7 @@ from discord import Embed, Color
 
 from constants import MessageResponseContext, SupportedLinks, SupportedFormats
 
-regex = r'([A-Za-z.]+)'
+regex = r'([A-Za-z0-9.]+)'
 replace = r'`\1`'
 
 supported_links_list = [link.value for link in SupportedLinks]
